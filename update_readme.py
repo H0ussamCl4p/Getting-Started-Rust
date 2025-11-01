@@ -17,11 +17,11 @@ def extract_description(project):
         with open(main_rs, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                # Look for a comment on the first few lines
+                # Take first comment as description
                 if line.startswith("//"):
                     return line.lstrip("/ ").strip()
                 elif line != "":
-                    break  # stop if we hit code before a comment
+                    break  # stop at first non-comment line
     return "Description coming soon"
 
 def generate_table(projects):
@@ -32,10 +32,10 @@ def generate_table(projects):
     return "\n".join(lines)
 
 def update_readme(projects):
+    # Create README if it doesn't exist
     if not os.path.exists(README_PATH):
-        print("No README.md found, creating a new one.")
-        with open(README_PATH, "w") as f:
-            f.write("# 🦀 Getting Started with Rust\n\n")
+        with open(README_PATH, "w", encoding="utf-8") as f:
+            f.write("# Getting-Started-Rust\n\n## 📚 Exercises\n\n## 🧰 Tools & Setup\n")
 
     with open(README_PATH, "r", encoding="utf-8") as f:
         content = f.read()
@@ -46,12 +46,11 @@ def update_readme(projects):
     table = generate_table(projects)
     section = f"{start_marker}\n\n{table}\n\n"
 
-    if start_marker in content:
-        # Replace existing section or append new
-        parts = content.split(start_marker)
-        before = parts[0]
-        after = parts[1] if len(parts) > 1 else ""
-        new_content = before + section + after
+    # Replace old table between start_marker and end_marker
+    if start_marker in content and end_marker in content:
+        before = content.split(start_marker)[0]
+        after = content.split(end_marker)[1]
+        new_content = before + section + end_marker + after
     else:
         new_content = content + "\n" + section
 
