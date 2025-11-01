@@ -1,4 +1,5 @@
 import os
+import re
 
 README_PATH = "README.md"
 EXCLUDED = {".git", "target", "__pycache__", "update_readme.py"}
@@ -17,11 +18,10 @@ def extract_description(project):
         with open(main_rs, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                # Take first comment as description
                 if line.startswith("//"):
                     return line.lstrip("/ ").strip()
                 elif line != "":
-                    break  # stop at first non-comment line
+                    break
     return "Description coming soon"
 
 def generate_table(projects):
@@ -36,29 +36,42 @@ def update_readme(projects):
     if not os.path.exists(README_PATH):
         with open(README_PATH, "w", encoding="utf-8") as f:
             f.write("# Getting-Started-Rust\n\n## 📚 Exercises\n\n## 🧰 Tools & Setup\n")
-
+    
     with open(README_PATH, "r", encoding="utf-8") as f:
         content = f.read()
-
-    start_marker = "## 📚 Exercises"
-    end_marker = "## 🧰 Tools & Setup"
-
+    
     table = generate_table(projects)
-    section = f"{start_marker}\n\n{table}\n\n"
-
-    # Replace old table between start_marker and end_marker
-    if start_marker in content and end_marker in content:
-        before = content.split(start_marker)[0]
-        after = content.split(end_marker)[1]
-        new_content = before + section + end_marker + after
+    
+    # Check if "## 📚 Exercises" section exists
+    if "## 📚 Exercises" in content and "## 🧰 Tools & Setup" in content:
+        # Replace content between the two headers
+        pattern = r"(## 📚 Exercises\n\n).*?(## 🧰 Tools & Setup)"
+        replacement = f"\\1{table}\n\n\\2"
+        content_final = re.sub(pattern, replacement, content, flags=re.DOTALL)
+    elif "## 📚 Exercises" in content:
+        # Only Exercises section exists, replace everything after it
+        pattern = r"(## 📚 Exercises\n\n).*"
+        replacement = f"\\1{table}\n"
+        content_final = re.sub(pattern, replacement, content, flags=re.DOTALL)
     else:
-        new_content = content + "\n" + section
-
-    with open(README_PATH, "w", encoding="utf-8") as f:
-        f.write(new_content)
-
-    print("✅ README.md updated successfully!")
+        # No Exercises section, add it before Tools & Setup or at the end
+        if "## 🧰 Tools & Setup" in content:
+            content_final = content.replace(
+                "## 🧰 Tools & Setup",
+                f"## 📚 Exercises\n\n{table}\n\n## 🧰 Tools & Setup"
+            )
+        else:
+            content_final = content + f"\n## 📚 Exercises\n\n{table}\n"
+    
+    with open(README_PATH, "w", encoding="utf-8", newline='') as f:
+        f.write(content_final)
+    
+    print(f"✅ README.md updated successfully! {len(projects)} project(s) listed.")
 
 if __name__ == "__main__":
     projects = get_projects()
-    update_readme(projects)
+    if projects:
+        update_readme(projects)
+        print(f"Found projects: {', '.join(projects)}")
+    else:
+        print("⚠️ No Rust projects found in current directory.")
