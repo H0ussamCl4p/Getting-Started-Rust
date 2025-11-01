@@ -1,12 +1,13 @@
 # Getting-Started-Rust
 
-A collection of Rust exercises and projects to learn the language fundamentals.
-
 <div align="center">
   
 **Made with ❤️ by Houssam**
 
 </div>
+
+
+A collection of Rust exercises and projects made using Rust Language.
 
 ## 📚 Exercises
 
@@ -59,3 +60,5 @@ cargo build --release
 - [The Rust Book](https://doc.rust-lang.org/book/) - Official Rust programming language book
 - [Rust by Example](https://doc.rust-lang.org/rust-by-example/) - Learn Rust with examples
 - [Rustlings](https://github.com/rust-lang/rustlings) - Small exercises to get you used to reading and writing Rust code
+
+
